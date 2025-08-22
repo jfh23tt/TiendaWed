@@ -1,0 +1,89 @@
+﻿@model Registrarse
+
+@{
+    ViewData["Title"] = "Información Personal";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+    body {
+        background-color: #1e1e1e;
+        color: white;
+    }
+
+    h2 {
+        color: #00bfff;
+        margin-bottom: 30px;
+    }
+
+    .form-label {
+        font-weight: bold;
+        color: white;
+        margin-bottom: 0;
+    }
+
+    .readonly-input {
+        background-color: transparent;
+        border: none;
+        color: white;
+        padding-left: 0;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+        .readonly-input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="container mt-5">
+    <!-- Mensajes si los hay -->
+    @if (TempData["MensajePerfil"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["MensajePerfil"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <h2>Información del Usuario</h2>
+    <div class="row">
+        <div class="col-md-6 form-group">
+            <label class="form-label">Tipo de documento:</label>
+            <input type="text" class="readonly-input" value="@Model.TipoC.ToString()" readonly />
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-label">Identificación:</label>
+            <input type="text" class="readonly-input" value="@Model.Identificacion" readonly />
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-label">Nombre:</label>
+            <input type="text" class="readonly-input" value="@Model.Nombre" readonly />
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-label">Apellido:</label>
+            <input type="text" class="readonly-input" value="@Model.Apellido" readonly />
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-label">Teléfono:</label>
+            <input type="text" class="readonly-input" value="@Model.Telefono" readonly />
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-label">Correo:</label>
+            <input type="email" class="readonly-input" value="@Model.Correo" readonly />
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-label">Fecha de Nacimiento:</label>
+            <input type="text" class="readonly-input" value="@Model.Fechadenacimiento.ToString("yyyy-MM-dd")" readonly />
+        </div>
+        <div class="col-md-6 form-group">
+            <label class="form-label">Sexo:</label>
+            <input type="text" class="readonly-input" value="@Model.Tiposexo.ToString()" readonly />
+        </div>
+    </div>
+</div>

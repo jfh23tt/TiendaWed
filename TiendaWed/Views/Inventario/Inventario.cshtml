@@ -1,0 +1,375 @@
+﻿@model List<ProductoModel>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light py-4">
+    <div class="container bg-white shadow rounded p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Gestión de Inventario</h2>
+            <div>
+                <a href="/Home/Index" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left-circle"></i> Menú
+                </a>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAgregar">
+                    <i class="bi bi-plus-circle"></i> Añadir Producto
+                </button>
+            </div>
+        </div>
+
+        <!-- Búsqueda -->
+        <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" placeholder="Buscar producto...">
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Unidades</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Nombre</td>
+                                <td>@item.Categoria</td>
+                                <td>@item.Precio.ToString("C")</td>
+                                <td>@item.Unidades</td>
+                                <td>@item.Descripcion</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm me-1 btn-editar"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEditar"
+                                            data-id="@item.Id"
+                                            data-nombre="@item.Nombre"
+                                            data-categoria="@item.Categoria"
+                                            data-precio="@item.Precio"
+                                            data-unidades="@item.Unidades"
+                                            data-descripcion="@item.Descripcion"
+                                            data-fechaingreso="@item.FechaCreacion.ToString("yyyy-MM-ddTHH:mm")">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm btn-eliminar"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalEliminar"
+                                            data-id="@item.Id">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-muted">No hay productos en el inventario.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Agregar Producto -->
+    <!-- Modal Añadir Producto -->
+    <div class="modal fade" id="modalAgregar" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <form asp-action="GuardarProducto" method="post" enctype="multipart/form-data" class="modal-content shadow-lg rounded-4 overflow-hidden">
+
+                <!-- Encabezado -->
+                <div class="modal-header text-white" style="background: linear-gradient(90deg, #0d6efd, #0b5ed7);">
+                    <h5 class="modal-title fw-bold">➕ Añadir Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Cuerpo con fondo azul degradado -->
+                <div class="modal-body text-dark" style="background: linear-gradient(180deg, #e9f2ff, #ffffff);">
+                    <div class="row g-3">
+
+                        <!-- Código -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Código</label>
+                            <input type="text" name="Codigo" class="form-control shadow-sm border-primary" required>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre</label>
+                            <input type="text" name="Nombre" class="form-control shadow-sm border-primary" required>
+                        </div>
+
+                        <!-- Categoría -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Categoría</label>
+                            <input type="text" name="Categoria" class="form-control shadow-sm border-primary">
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Precio</label>
+                            <input type="number" step="0.01" name="Precio" class="form-control shadow-sm border-primary" required>
+                        </div>
+
+                        <!-- Unidades -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Unidades</label>
+                            <input type="number" name="Unidades" class="form-control shadow-sm border-primary" required>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Estado</label>
+                            <select name="estado" class="form-select shadow-sm border-primary" asp-items="Html.GetEnumSelectList<Estado>()"></select>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Imagen</label>
+                            <input type="file" name="ImageFile" class="form-control shadow-sm border-primary" required>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Descripción</label>
+                            <textarea name="Descripcion" class="form-control shadow-sm border-primary" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer d-flex justify-content-between" style="background: linear-gradient(90deg, #0d6efd, #0b5ed7);">
+                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success fw-semibold px-4">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Modal Editar Producto -->
+    <div class="modal fade" id="modalEditar" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <form id="formEditar" class="modal-content">
+                <!-- Encabezado -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Editar Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Cuerpo con fondo azul -->
+                <div class="modal-body" style="background-color:#0d6efd; color:white;">
+                    <div class="row g-3">
+
+                        <!-- Código -->
+                        <div class="col-md-6">
+                            <label class="form-label">Código</label>
+                            <input type="text" name="Codigo" id="editCodigo" class="form-control" required>
+                        </div>
+
+                        <!-- Nombre -->
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="Nombre" id="editNombre" class="form-control" required>
+                        </div>
+
+                        <!-- Categoría -->
+                        <div class="col-md-6">
+                            <label class="form-label">Categoría</label>
+                            <input type="text" name="Categoria" id="editCategoria" class="form-control">
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="col-md-6">
+                            <label class="form-label">Precio</label>
+                            <input type="number" step="0.01" name="Precio" id="editPrecio" class="form-control" required>
+                        </div>
+
+                        <!-- Unidades -->
+                        <div class="col-md-6">
+                            <label class="form-label">Unidades</label>
+                            <input type="number" name="Unidades" id="editUnidades" class="form-control" required>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <select name="estado" id="editEstado" class="form-select" asp-items="Html.GetEnumSelectList<Estado>()"></select>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="col-md-6">
+                            <label class="form-label">Imagen</label>
+                            <input type="file" name="ImageFile" id="editImageFile" class="form-control">
+                            <small class="text-light">Si no seleccionas una imagen, se mantendrá la actual.</small>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="Descripcion" id="editDescripcion" class="form-control" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer bg-primary">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar Producto -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="formEliminar" class="modal-content">
+                <!-- Encabezado -->
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Eliminar Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Cuerpo -->
+                <div class="modal-body" style="background-color:#f8d7da; color:#842029;">
+                    <input type="hidden" id="EliminarId" name="Id">
+                    <p class="mb-0 fw-bold">⚠️ ¿Estás seguro de que deseas eliminar este producto?</p>
+                    <p class="mb-0">Esta acción no se puede deshacer.</p>
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer bg-danger">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const formAgregar = document.getElementById("formAgregar");
+            const formEditar = document.getElementById("formEditar");
+            const formEliminar = document.getElementById("formEliminar");
+
+            // Guardar nuevo producto
+            formAgregar.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const formData = new FormData(formAgregar);
+                try {
+                    const response = await fetch("/Producto/GuardarProducto", {
+                        method: "POST",
+                        body: formData
+                    });
+                    if (response.ok) {
+                        alert("✅ Producto guardado correctamente.");
+                        formAgregar.reset();
+                        bootstrap.Modal.getInstance(document.getElementById("modalAgregar")).hide();
+                        location.reload();
+                    } else {
+                        alert("❌ Error al guardar el producto.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Error inesperado.");
+                }
+            });
+
+            // Cargar datos en el modal de edición
+            document.querySelectorAll(".btn-editar").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.getElementById("EditId").value = btn.dataset.id;
+                    document.getElementById("EditNombre").value = btn.dataset.nombre;
+                    document.getElementById("EditCategoria").value = btn.dataset.categoria;
+                    document.getElementById("EditPrecio").value = btn.dataset.precio;
+                    document.getElementById("EditUnidades").value = btn.dataset.unidades;
+                    document.getElementById("EditDescripcion").value = btn.dataset.descripcion;
+                    document.getElementById("EditFechaIngreso").value = btn.dataset.fechaingreso;
+                });
+            });
+
+            // Editar producto
+            formEditar.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const data = {
+                    Id: parseInt(document.getElementById("EditId").value),
+                    Nombre: document.getElementById("EditNombre").value,
+                    Categoria: document.getElementById("EditCategoria").value,
+                    Unidades: parseInt(document.getElementById("EditUnidades").value),
+                    Precio: parseFloat(document.getElementById("EditPrecio").value),
+                    Descripcion: document.getElementById("EditDescripcion").value
+                };
+                try {
+                    const response = await fetch("/Producto/EditarProducto", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                    if (response.ok) {
+                        alert("✅ Producto actualizado correctamente.");
+                        bootstrap.Modal.getInstance(document.getElementById("modalEditar")).hide();
+                        location.reload();
+                    } else {
+                        alert("❌ Error al actualizar el producto.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Error inesperado.");
+                }
+            });
+
+            // Abrir modal de eliminar
+            document.querySelectorAll(".btn-eliminar").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.getElementById("EliminarId").value = btn.dataset.id;
+                });
+            });
+
+            // Eliminar producto
+            formEliminar.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const id = parseInt(document.getElementById("EliminarId").value);
+                try {
+                    const response = await fetch(`/Producto/EliminarProducto/${id}`, {
+                        method: "DELETE"
+                    });
+                    if (response.ok) {
+                        alert("🗑 Producto eliminado correctamente.");
+                        bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
+                        location.reload();
+                    } else {
+                        alert("❌ Error al eliminar el producto.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Error inesperado.");
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

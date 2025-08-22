@@ -1,0 +1,72 @@
+﻿@model List<CarritoItem>
+
+@{
+    ViewData["Title"] = "Carrito de compra";
+    decimal total = Model.Sum(item => item.Producto.Precio * item.Cantidad);
+}
+
+<h2>Carrito</h2>
+<link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+@if (Model.Count == 0)
+{
+    <p>No tienes productos en tu carrito</p>
+    <a href="@Url.Action("Principal", "Home")" class="btn btn-primary">Ver Productos</a>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Imagen</th>
+                <th>Producto</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><img src="@item.Producto.Urlimagen" alt="Imagen producto" width="60" /></td>
+                    <td>@item.Producto.Nombre</td>
+                    <td>@item.Producto.Descripcion</td>
+                    <td>
+                        <form asp-action="Actualizar" asp-controller="Carrito" method="post" style="display:inline;">
+                            <input type="hidden" name="ProductoId" value="@item.Producto.Id" />
+                            <input type="number" name="Cantidad" value="@item.Cantidad" min="1" class="form-control d-inline-block" style="width: 70px;" />
+                            <button type="submit" class="btn btn-sm btn-secondary">Actualizar</button>
+                        </form>
+                    </td>
+                    <td>@item.Producto.Precio.ToString("C2")</td>
+                    <td>@((item.Producto.Precio * item.Cantidad).ToString("C2"))</td>
+                    <td>
+                        <form asp-action="Eliminar" asp-controller="Carrito" method="post" style="display:inline;">
+                            <input type="hidden" name="ProductoId" value="@item.Producto.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" class="text-end"><strong>Total:</strong></td>
+                <td>@total.ToString("C2")</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="d-flex justify-content-between">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-success">Seguir Comprando</a>
+
+        <form asp-action="RealizarCompra" asp-controller="Carrito" method="post">
+            <button type="submit" class="btn btn-primary">Finalizar Compra</button>
+        </form>
+    </div>
+}

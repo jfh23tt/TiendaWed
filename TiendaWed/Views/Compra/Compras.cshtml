@@ -1,0 +1,70 @@
+﻿@model IEnumerable<TiendaWed.Models.PedidoModel>
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var nombreUsuario = HttpContextAccessor.HttpContext.Session.GetString("NombreUsuario") ?? "Invitado";
+    var rolUsuario = HttpContextAccessor.HttpContext.Session.GetString("RolUsuario") ?? "Cliente";
+    var carritoCantidad = HttpContextAccessor.HttpContext.Session.GetInt32("CarritoCantidad") ?? 0;
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary fw-bold">Mis Compras</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        foreach (var compra in Model)
+        {
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <!-- Cabecera con fecha -->
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">📅 @compra.Fecha.ToString("dd 'de' MMMM yyyy")</small>
+                        <span class="fw-bold text-primary">
+                            Compra #@compra.Id
+                        </span>
+                    </div>
+
+                    <!-- Productos -->
+                    @if (compra.Detalles != null && compra.Detalles.Any())
+                    {
+                        var producto = compra.Detalles.First();
+
+                        // Si solo tienes nombre de archivo en la BD, arma la ruta completa
+                        string urlImagen = string.IsNullOrEmpty(producto.UrlImagen)
+                        ? Url.Content("~/Produimage/sin-imagen.png")  // imagen por defecto
+                        : (producto.UrlImagen.StartsWith("/Produimage/")
+                        ? Url.Content(producto.UrlImagen)          // ya tiene ruta
+                        : Url.Content("~/Produimage/" + producto.UrlImagen)); // solo nombre de archivo
+
+                        <div class="d-flex align-items-center mt-2">
+                            <img src="@urlImagen"
+                                 alt="@producto.Nombre"
+                                 class="me-3 rounded shadow-sm"
+                                 style="width:80px;height:80px;object-fit:cover;" />
+                            <div>
+                                <h6 class="mb-1">@producto.Nombre</h6>
+                                <small class="text-muted">@producto.Cantidad unidad(es)</small>
+                                <br />
+                                <small class="fw-bold">Subtotal: @producto.Subtotal.ToString("C")</small>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Total -->
+                    <p class="mt-2 fw-bold">💰 Total: @compra.Total.ToString("C")</p>
+
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-end">
+                        <a asp-action="DetalleCompra" asp-route-id="@compra.Id" class="btn btn-sm btn-primary me-2">Ver compra</a>
+                        <a asp-action="RepetirCompra" asp-route-id="@compra.Id" class="btn btn-sm btn-outline-secondary">Volver a comprar</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info text-center">No tienes compras registradas aún 🛒</div>
+    }
+</div>
