@@ -30,6 +30,97 @@ namespace TiendaWed.Controllers
             ViewBag.Query = query;
             return View("~/Views/Home/Index.cshtml", productos);
         }
+        [HttpPost]
+        public async Task<IActionResult> Editar(ProductoModel producto)
+        {
+            if (producto == null)
+            {
+                TempData["ErrorMessage"] = "⚠️ El modelo llegó vacío.";
+                return RedirectToAction("Inventario");
+            }
+
+            try
+            {
+                // 📌 Si el usuario subió una nueva imagen
+                if (producto.ImageFile != null && producto.ImageFile.Length > 0)
+                {
+                    var extension = Path.GetExtension(producto.ImageFile.FileName).ToLower();
+
+                    // Extensiones permitidas
+                    var permitidas = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+                    if (!permitidas.Contains(extension))
+                    {
+                        TempData["ErrorMessage"] = "⚠️ Solo se permiten imágenes (JPG, JPEG, PNG, GIF, WEBP).";
+                        return RedirectToAction("Inventario");
+                    }
+
+                    var nuevoNombre = Guid.NewGuid().ToString() + extension;
+
+                    var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Produimage");
+
+                    if (!Directory.Exists(carpeta))
+                        Directory.CreateDirectory(carpeta);
+
+                    var filePath = Path.Combine(carpeta, nuevoNombre);
+
+                    // ✅ Guardar nueva imagen
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await producto.ImageFile.CopyToAsync(stream);
+                    }
+
+                    // Guardar la nueva URL
+                    producto.Urlimagen = "/Produimage/" + nuevoNombre;
+                }
+                else
+                {
+                    // 📌 Mantener la imagen anterior (sacada de BD)
+                    var prodAnterior = await repositorioProducto.ObtenerProductoPorId(producto.Id);
+                    if (prodAnterior != null)
+                        producto.Urlimagen = prodAnterior.Urlimagen;
+                }
+
+                // ✅ Actualizar en BD
+                bool actualizado = await repositorioProducto.Actualizar(producto);
+
+                if (actualizado)
+                {
+                    TempData["SuccessMessage"] = "✅ Producto actualizado correctamente.";
+                    return Ok();
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "❌ No se pudo actualizar el producto.";
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "❌ Error: " + ex.Message;
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        public async Task<IActionResult> Eliminar(int id)
+        {
+            var producto = await repositorioProducto.ObtenerProductoPorId(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+
+            return View("~/Views/Inventario/Inventario.cshtml", producto);
+        }
+
+        //[HttpPost, ActionName("Eliminar")]
+        //public async Task<IActionResult> ConfirmarEliminar(int id)
+        //{
+        //    await repositorioInventario.EliminarProducto(id);
+        //    return RedirectToAction("Index");
+        //}
+    
 
 
 
@@ -56,6 +147,7 @@ namespace TiendaWed.Controllers
 
         // POST: Guardar producto
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> GuardarProducto(ProductoModel ccc)
         {
             try
@@ -63,13 +155,23 @@ namespace TiendaWed.Controllers
                 if (ccc == null)
                 {
                     TempData["ErrorMessage"] = "⚠️ El modelo llegó vacío.";
-                    return RedirectToAction("Producto");
+                    return RedirectToAction("Inventario");
                 }
 
                 if (ccc.ImageFile != null && ccc.ImageFile.Length > 0)
                 {
-                    var extension = Path.GetExtension(ccc.ImageFile.FileName);
-                    var NuevoNombre = Guid.NewGuid().ToString() + extension;
+                    var extension = Path.GetExtension(ccc.ImageFile.FileName).ToLower();
+
+                    // Extensiones permitidas
+                    var permitidas = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+                    if (!permitidas.Contains(extension))
+                    {
+                        TempData["ErrorMessage"] = "⚠️ Solo se permiten imágenes (JPG, JPEG, PNG, GIF, WEBP).";
+                        return RedirectToAction("Inventario");
+                    }
+
+                    var nuevoNombre = Guid.NewGuid().ToString() + extension;
 
                     var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Produimage");
 
@@ -77,33 +179,26 @@ namespace TiendaWed.Controllers
                     if (!Directory.Exists(carpeta))
                         Directory.CreateDirectory(carpeta);
 
-                    var filePath = Path.Combine(carpeta, NuevoNombre);
+                    var filePath = Path.Combine(carpeta, nuevoNombre);
 
-                    // ✅ Sobrescribir en caso de existir (evita bloqueo por archivo previo)
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-
-                    // ✅ Copiar imagen y cerrar stream automáticamente
+                    // ✅ Guardar imagen
                     using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
                     {
                         await ccc.ImageFile.CopyToAsync(stream);
                     }
 
                     // Guardar ruta relativa
-                    ccc.Urlimagen = "/Produimage/" + NuevoNombre;
+                    ccc.Urlimagen = "/Produimage/" + nuevoNombre;
 
-                    // 👇 Setear fecha de creación
-                    ccc.FechaCreacion = DateTime.UtcNow;
+                    // Setear fecha creación
+                    ccc.FechaCreacion = DateTime.Now;
 
                     // ✅ Insertar en BD
                     bool insertado = await repositorioProducto.InsertarProducto(ccc);
 
-                    if (insertado)
-                        TempData["SuccessMessage"] = "✅ El producto se guardó exitosamente.";
-                    else
-                        TempData["ErrorMessage"] = "❌ No se pudo guardar el producto.";
+                    TempData["SuccessMessage"] = insertado
+                        ? "✅ El producto se guardó exitosamente."
+                        : "❌ No se pudo guardar el producto.";
                 }
                 else
                 {

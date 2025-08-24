@@ -32,7 +32,7 @@ public class ProductoModel
 
     [Required(ErrorMessage = "El Campo {0} Es Requerido")]
     public Estado estado { get; set; }
-
+    [DataType(DataType.Upload)]
     public string Urlimagen { get; set; }
 
     [Required(ErrorMessage = "Por Favor, Seleccione Una Imagen")]

@@ -33,7 +33,6 @@
 
 /* SLIDER */
 .img-slider {
-    
     height: 400px;
     border-radius: 9px;
 }
@@ -47,7 +46,7 @@
 }
 
     .producto-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-20px);
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     }
 

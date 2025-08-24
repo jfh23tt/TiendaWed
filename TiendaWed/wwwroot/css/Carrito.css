@@ -1,0 +1,92 @@
+﻿/* Fondo general */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI',Tahoma, Geneva,Verdana, sans-serif,
+}
+h2 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    text-align: center;
+}
+/* Tabla */
+.table {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+.table {
+    background: linear-gradient(90deg,#007bff,#00c6ff);
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+    .table tbody tr:hover {
+        background-color: #f2faff;
+        transition: 0.3s;
+        transform: translateY(-1px);
+        transition: all 0.3s ease-in-out;
+    }
+.table img:hover{
+    transform:scale(1.1);
+
+}
+/* Inputs cantidad */
+.table input[type="number"]{
+    border-radius:8px;
+    border:1px solid #ced4da;
+    padding:5px;
+    text-align:center;
+}
+/* Botones */
+.btn{
+    border-radius:8px;
+    font-weight:500;
+    transition:all 0.3s ease;
+}
+.btn-primary {
+    background: linear-gradient(45deg, #0077bff,#00c6ff);
+    border: none;
+}
+.btn-primary:hover{
+    background:linear-gradient(45deg,#0056b3,#0096c7);
+    transform: translate(-4px);
+    
+}
+.btn-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border:none;
+}
+    .btn-success:hover {
+        background: linear-gradient(45deg, #218838, #17a589);
+        transform: translateY(-2px);
+    }
+
+.btn-danger {
+    background: linear-gradient(45deg, #dc3545, #ff4d6d);
+    border: none;
+}
+
+    .btn-danger:hover {
+        background: linear-gradient(45deg, #bd2130, #e63946);
+        transform: translateY(-2px);
+    }
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+}
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+
+/* Total */
+tfoot td {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
