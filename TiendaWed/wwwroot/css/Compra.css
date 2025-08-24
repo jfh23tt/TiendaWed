@@ -1,0 +1,114 @@
+﻿/* ====== ESTILOS GENERALES ====== */
+body {
+    background-color: #f8f9fa;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    color: #333;
+}
+
+/* Contenedor */
+.container {
+    max-width: 950px;
+}
+
+/* ====== TITULO ====== */
+h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #0d6efd; /* azul bootstrap */
+    border-bottom: 3px solid #0d6efd;
+    display: inline-block;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+}
+
+/* ====== TARJETAS DE COMPRA ====== */
+.card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0px 6px 20px rgba(0,0,0,0.1);
+    }
+
+.card-body {
+    padding: 1.5rem;
+}
+
+    /* ====== IMAGEN PRODUCTO ====== */
+    .card-body img {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+    }
+
+    /* ====== TEXTO DE PRODUCTOS ====== */
+    .card-body h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .card-body small {
+        font-size: 0.9rem;
+    }
+
+    /* ====== INFO DE COMPRA ====== */
+    .card-body .fw-bold.text-primary {
+        font-size: 0.95rem;
+    }
+
+    .card-body p {
+        font-size: 1rem;
+        color: #222;
+    }
+
+/* ====== BOTONES ====== */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-sm {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+}
+
+/* Botón principal */
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    border: none;
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+        transform: scale(1.05);
+    }
+
+/* Botón secundario */
+.btn-outline-secondary {
+    border: 1.5px solid #6c757d;
+    color: #6c757d;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #fff;
+        transform: scale(1.05);
+    }
+
+/* Botón volver al menú */
+.btn-outline-primary {
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-weight: 600;
+}
+
+/* ====== ALERTA SIN COMPRAS ====== */
+.alert-info {
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+}
