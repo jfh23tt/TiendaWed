@@ -14,7 +14,8 @@ namespace TiendaWed.Repositorio
         Task<ProductoModel> ObtenerProductoPorId(int id); // Obtener producto por id
         CarritoModel selectcarro(int Codigo);
 
-    }
+            Task Actualizar(ProductoModel producto);
+        }
     public class RepositorioProducto : IRepositorioProducto
     {
         private readonly string cnx;
@@ -100,6 +101,26 @@ namespace TiendaWed.Repositorio
                 return result;
             }
         }
+        public async Task Actualizar(ProductoModel producto)
+        {
+            using (var connection = new SqlConnection(cnx))
+            {
+                string sql = @"
+            UPDATE Producto
+            SET Codigo = @Codigo,
+                Nombre = @Nombre,
+                Categoria = @Categoria,
+                Descripcion = @Descripcion,
+                Precio = @Precio,
+                Unidades = @Unidades,
+                Estado = @Estado,
+                urlimagen = @urlimagen
+            WHERE Id = @Id";
+
+                await connection.ExecuteAsync(sql, producto);
+            }
+        }
+
 
 
 

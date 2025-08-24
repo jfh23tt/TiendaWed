@@ -7,6 +7,13 @@
     var rolUsuario = HttpContextAccessor.HttpContext.Session.GetString("RolUsuario") ?? "Cliente";
     var carritoCantidad = HttpContextAccessor.HttpContext.Session.GetInt32("CarritoCantidad") ?? 0;
 }
+<div class="container mt-4">
+    <!-- Botón volver al menú -->
+    <div class="mb-3">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left-circle me-2"></i> Volver al Menú
+        </a>
+    </div>
 
 <div class="container mt-4">
     <h2 class="mb-4 text-primary fw-bold">Mis Compras</h2>

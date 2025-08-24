@@ -116,26 +116,26 @@ namespace TiendaWed.Repositorio
                 {
                     try
                     {
-                        // 1️⃣ Insertar en tabla Orden
-                        string sqlOrden = @"INSERT INTO Pedido  (UsuarioId, Fecha, Total)
-                                            VALUES (@UsuarioId, GETDATE(), @Total);
-                                            SELECT CAST(SCOPE_IDENTITY() as int);";
+                        // 1️⃣ Insertar en tabla Pedidos
+                        string sqlPedido = @"INSERT INTO Pedidos (UsuarioId, Fecha, Total)
+                                     VALUES (@UsuarioId, GETDATE(), @Total);
+                                     SELECT CAST(SCOPE_IDENTITY() as int);";
 
-                        int ordenId = db.QuerySingle<int>(sqlOrden, new
+                        int pedidoId = db.QuerySingle<int>(sqlPedido, new
                         {
                             UsuarioId = usuarioId,
                             Total = obtenerTotal()
                         }, transaction);
 
-                        // 2️⃣ Insertar detalle de orden
-                        string sqlDetalle = @"INSERT INTO PedidoDetalle  (OrdenId, ProductoId, Cantidad, PrecioUnitario)
-                                              VALUES (@OrdenId, @ProductoId, @Cantidad, @PrecioUnitario);";
+                        // 2️⃣ Insertar detalle de pedido en PedidoDetalles
+                        string sqlDetalle = @"INSERT INTO PedidoDetalles (PedidoId, ProductoId, Cantidad, PrecioUnitario)
+                                      VALUES (@PedidoId, @ProductoId, @Cantidad, @PrecioUnitario);";
 
                         foreach (var item in cart.Items)
                         {
                             db.Execute(sqlDetalle, new
                             {
-                                OrdenId = ordenId,
+                                PedidoId = pedidoId,
                                 ProductoId = item.Producto.Id,
                                 Cantidad = item.Cantidad,
                                 PrecioUnitario = item.Producto.Precio
@@ -143,8 +143,8 @@ namespace TiendaWed.Repositorio
 
                             // 3️⃣ Descontar stock del producto
                             string sqlUpdateStock = @"UPDATE Producto 
-                                                      SET Unidades = Unidades - @Cantidad 
-                                                      WHERE Id = @Id";
+                                              SET Unidades = Unidades - @Cantidad 
+                                              WHERE Id = @Id";
 
                             db.Execute(sqlUpdateStock, new
                             {
@@ -166,6 +166,7 @@ namespace TiendaWed.Repositorio
                 }
             }
         }
+
         //public int cantidadTotalCarrito()
         //{
         //    var cart = obtenerItemsSesion();

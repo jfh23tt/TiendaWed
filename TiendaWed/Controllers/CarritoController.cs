@@ -47,7 +47,7 @@ public class CarritoController : Controller
             return RedirectToAction("Compras");
         }
 
-        return View(pedido); // 👈 Renderiza DetalleCompra.cshtml
+        return View("~/Views/Carrito/DetalleCompra.cshtml", pedido); // 👈 Renderiza DetalleCompra.cshtml
     }
 
 
@@ -148,10 +148,12 @@ public class CarritoController : Controller
             return RedirectToAction("Login", "Logins");
         }
 
+        var clienteNombre = HttpContext.Session.GetString("NombreUsuario") ?? "Cliente";
+
         var pedido = new PedidoModel
         {
             UsuarioId = usuarioId,
-            ClienteNombre = TempData["NombreUsuario"]?.ToString() ?? "Cliente",
+            ClienteNombre = clienteNombre,
             Fecha = DateTime.Now,
             Total = itemsCarrito.Sum(x => x.Producto.Precio * x.Cantidad),
             Detalles = itemsCarrito.Select(x => new PedidoDetalle
@@ -165,19 +167,38 @@ public class CarritoController : Controller
 
         try
         {
+            // Guardar el pedido
             var pedidoId = await repositorioPedido.CrearPedido(pedido);
 
+            // Descontar stock de cada producto
+            foreach (var item in itemsCarrito)
+            {
+                var producto = await repositorioProducto.ObtenerProductoPorId(item.Producto.Id);
+                if (producto != null)
+                {
+                    producto.Unidades -= item.Cantidad;
+                    await repositorioProducto.Actualizar(producto);
+                }
+            }
+
+            // Vaciar carrito
             carritoServicio.LimpiarCarro();
 
+            // Mensaje de éxito
             TempData["MensajeExito"] = $"Compra realizada con éxito. Número de pedido: {pedidoId}";
-            return RedirectToAction("Index", "Home");
+
+            // Redirigir a confirmación de compra
+            return RedirectToAction("Index", "Home", new { id = pedidoId });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            
+
             TempData["MensajeError"] = "Hubo un error al procesar la compra. Intente nuevamente.";
             return RedirectToAction("Carrito");
         }
     }
+
 
     // Comprar directamente un solo producto
     [HttpPost]
@@ -204,15 +225,15 @@ public class CarritoController : Controller
             Fecha = DateTime.Now,
             Total = producto.Precio * cantidad,
             Detalles = new List<PedidoDetalle>
+        {
+            new PedidoDetalle
             {
-                new PedidoDetalle
-                {
-                    ProductoId = producto.Id,
-                    Nombre = producto.Nombre,
-                    Cantidad = cantidad,
-                    PrecioUnitario = producto.Precio
-                }
+                ProductoId = producto.Id,
+                Nombre = producto.Nombre,
+                Cantidad = cantidad,
+                PrecioUnitario = producto.Precio
             }
+        }
         };
 
         try
@@ -227,4 +248,5 @@ public class CarritoController : Controller
             return RedirectToAction("Index", "Home");
         }
     }
+
 }

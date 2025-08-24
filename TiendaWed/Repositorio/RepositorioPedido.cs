@@ -63,52 +63,90 @@ namespace TiendaWed.Repositorio
 
         public async Task<int> CrearPedido(PedidoModel pedido)
         {
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync();
-
-            using var transaction = connection.BeginTransaction();
-
-            try
+            using (var connection = new SqlConnection(connectionString))
             {
-                // 1️⃣ Insertar Pedido
-                var sql = @"INSERT INTO Pedidos (UsuarioId, Fecha, Total)
-                            VALUES (@UsuarioId, @Fecha, @Total);
-                            SELECT CAST(SCOPE_IDENTITY() as int);";
-
-                var pedidoId = await connection.ExecuteScalarAsync<int>(sql, new
+                await connection.OpenAsync();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    pedido.UsuarioId,
-                    pedido.Fecha,
-                    pedido.Total
-                }, transaction);
-
-                // 2️⃣ Insertar Detalles
-                var sqlDetalle = @"INSERT INTO PedidoDetalles 
-                                  (PedidoId, ProductoId, Nombre, Cantidad, PrecioUnitario, Subtotal)
-                                  VALUES (@PedidoId, @ProductoId, @Nombre, @Cantidad, @PrecioUnitario, @Subtotal)";
-
-                foreach (var detalle in pedido.Detalles)
-                {
-                    await connection.ExecuteAsync(sqlDetalle, new
+                    try
                     {
-                        PedidoId = pedidoId,
-                        detalle.ProductoId,
-                        detalle.Nombre,
-                        detalle.Cantidad,
-                        detalle.PrecioUnitario,
-                        Subtotal = detalle.Subtotal
-                    }, transaction);
-                }
+                        // 1. Insertar pedido
+                        string sqlPedido = @"
+                INSERT INTO Pedidos (UsuarioId, Fecha, Total)
+                VALUES (@UsuarioId, @Fecha, @Total);
+                SELECT CAST(SCOPE_IDENTITY() as int);";
 
-                transaction.Commit();
-                return pedidoId;
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
+                        int pedidoId = await connection.ExecuteScalarAsync<int>(sqlPedido, new
+                        {
+                            pedido.UsuarioId,
+                            pedido.Fecha,
+                            pedido.Total
+                        }, transaction);
+
+                        // 2. Insertar detalles
+                        string sqlDetalle = @"
+                INSERT INTO PedidoDetalles 
+                    (PedidoId, ProductoId, Nombre, Cantidad, PrecioUnitario, Subtotal)
+                VALUES 
+                    (@PedidoId, @ProductoId, @Nombre, @Cantidad, @PrecioUnitario, @Subtotal);";
+
+                        foreach (var detalle in pedido.Detalles)
+                        {
+                            // Insertar detalle
+                            await connection.ExecuteAsync(sqlDetalle, new
+                            {
+                                PedidoId = pedidoId,
+                                detalle.ProductoId,
+                                detalle.Nombre,
+                                detalle.Cantidad,
+                                detalle.PrecioUnitario,
+                                Subtotal = detalle.Subtotal
+                            }, transaction);
+
+                            // 3. Descontar stock de forma segura
+                            string sqlStock = @"
+                    UPDATE Producto
+                    SET Unidades = CASE 
+                                      WHEN Unidades >= @Cantidad THEN Unidades - @Cantidad
+                                      ELSE Unidades
+                                   END
+                    WHERE Id = @Id;";
+
+                            int filasAfectadas = await connection.ExecuteAsync(sqlStock, new
+                            {
+                                Cantidad = detalle.Cantidad,
+                                Id = detalle.ProductoId
+                            }, transaction);
+
+                            // Validar si realmente descontó stock
+                            var stockRestante = await connection.ExecuteScalarAsync<int>(
+                                "SELECT Unidades FROM Producto WHERE Id = @Id;",
+                                new { Id = detalle.ProductoId }, transaction);
+
+                            if (stockRestante < 0)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Stock insuficiente para el producto ID {detalle.ProductoId}.");
+                            }
+                        }
+
+                        // 4. Confirmar transacción
+                        transaction.Commit();
+                        return pedidoId;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
             }
         }
+
+
+
+
+
 
         // 🔹 3️⃣ Obtener Pedido con sus Detalles
         public async Task<PedidoModel?> ObtenerPedidoConDetalles(int pedidoId)

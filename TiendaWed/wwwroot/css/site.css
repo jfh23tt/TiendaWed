@@ -1,22 +1,53 @@
-html {
-  font-size: 14px;
+.navbar-custom {
+    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+    padding: 0.7rem 1rem;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    .navbar-custom .nav-link {
+        color: #fff !important;
+        transition: color 0.2s ease-in-out;
+    }
+
+        .navbar-custom .nav-link:hover {
+            color: #ffc107 !important; /* Amarillo dorado */
+        }
+
+.navbar-categorias {
+    background: #f8f9fa;
+    border-top: 1px solid #eaeaea;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    .navbar-categorias .nav-link {
+        font-weight: 500;
+        color: #444;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .navbar-categorias .nav-link:hover {
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+        }
+.search-box input {
+    border-radius: 50px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease-in-out;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+    .search-box input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 5px rgba(13, 110, 253, 0.4);
+    }
+
+.search-box button {
+    border-radius: 50%;
+    transition: background 0.3s;
 }
 
-body {
-  margin-bottom: 60px;
+    .search-box button:hover {
+        background: #f1f1f1;
+    }
+.navbar-custom .badge {
+    font-size: 0.75rem;
+    padding: 0.4em 0.5em;
+    transform: translate(30%, -30%);
 }
