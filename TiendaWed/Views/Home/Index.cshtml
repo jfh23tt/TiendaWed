@@ -6,6 +6,7 @@
     var nombreUsuario = HttpContextAccessor.HttpContext.Session.GetString("NombreUsuario") ?? "Invitado";
     var rolUsuario = HttpContextAccessor.HttpContext.Session.GetString("RolUsuario") ?? "Cliente";
     var carritoCantidad = HttpContextAccessor.HttpContext.Session.GetInt32("CarritoCantidad") ?? 0;
+    
 }
 
 <!DOCTYPE html>
@@ -18,7 +19,6 @@
     <!-- Bootstrap y estilos -->
     <link href="~/css/principalstyle.css" rel="stylesheet" />
     <link href="~/css/site.css" rel="stylesheet" />
-    
 </head>
 <body>
 
@@ -45,19 +45,17 @@
                         @nombreUsuario
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="~/Producto/Inventario">📦 Inventario</a></li>
+                        @if (rolUsuario?.ToLower() == "admin")
+                        {
+                            <li><a class="dropdown-item" href="~/Producto/Inventario">📦 Inventario</a></li>
+                            <li><a class="dropdown-item" href="~/Admin/Usuario"> Usuario</a></li>
+                        }
+                      
                         <li><a class="dropdown-item" href="~/Configuracion/Configuracion">⚙️ Configuraciones</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="~/Logins/CerrarSesion">🚪 Cerrar sesión</a></li>
                     </ul>
                 </li>
-
-                @if (rolUsuario == "Admin")
-                {
-                    <li class="nav-item me-3">
-                        <a class="nav-link text-light" asp-controller="Admin" asp-action="Index">Panel Admin</a>
-                    </li>
-                }
 
                 <li class="nav-item me-3"><a class="nav-link" asp-controller="Carrito" asp-action="Compras">Mis compras</a></li>
                 <li class="nav-item me-3"><a class="nav-link" href="#">Favoritos</a></li>
@@ -73,6 +71,24 @@
             </ul>
         </div>
     </nav>
+    <!-- ALERTAS DE MENSAJE -->
+    <div class="container mt-3">
+        @if (TempData["MensajeExito"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["MensajeExito"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["MensajeError"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["MensajeError"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+    </div>
+
 
     <!-- NAVBAR CATEGORÍAS -->
     <div class="navbar-categorias shadow-sm py-2">
@@ -141,7 +157,7 @@
                             <form asp-action="Agregar" asp-controller="Carrito" method="post" class="mt-3">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="codigo" value="@producto.Codigo" />
-                                <input type="number" name="cantidad" value="1" min="1" class="form-control mb-2" />
+                                <input type="number" for="Cantidad" name="Cantidad" value="1" min="1" class="form-control mb-2" />
                                 <button class="btn btn-outline-success btn-sm w-100">Ir al carrito</button>
                             </form>
                         </div>

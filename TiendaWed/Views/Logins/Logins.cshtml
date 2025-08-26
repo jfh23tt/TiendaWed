@@ -39,9 +39,9 @@
                 <h2 class="fw-bold text-center py-4">Bienvenido</h2>
 
                 <!-- Mensajes -->
-                @if (TempData["Success"] != null)
+                @if (ViewData["Success"] != null)
                 {
-                    <div class="alert alert-success text-center">@TempData["Success"]</div>
+                    <div class="alert alert-success text-center">@ViewData["Success"]</div>
                 }
                 @if (ViewData["Error"] != null)
                 {
@@ -52,10 +52,12 @@
                     <div class="mb-3">
                         <label class="form-label">Correo</label>
                         <input asp-for="correo" type="email" class="form-control" placeholder="Ingresa tu correo" required />
+                        <span asp-validation-for="correo" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Contraseña</label>
                         <input asp-for="contraseña" type="password" class="form-control" placeholder="Ingresa tu contraseña" required />
+                        <span asp-validation-for="contraseña" class="text-danger"></span>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
@@ -70,10 +72,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-@* 
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
-}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script> *@

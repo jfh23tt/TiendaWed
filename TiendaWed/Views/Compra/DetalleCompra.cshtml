@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Detalle de la Compra";
 }
-
+<link href="~/css/CompraDetalle.css" rel="stylesheet" />
 <div class="container mt-4">
     <h2 class="text-primary fw-bold">Detalle de la Compra</h2>
 
@@ -22,17 +22,18 @@
         <div class="row">
             @foreach (var producto in Model.Detalles)
             {
-                string urlImagen = string.IsNullOrEmpty(producto.UrlImagen)
-                ? Url.Content("~/Produimage/sin-imagen.png")
-                : (producto.UrlImagen.StartsWith("/Produimage/")
-                ? Url.Content(producto.UrlImagen)
-                : Url.Content("~/Produimage/" + producto.UrlImagen));
+                // Verificamos si la imagen viene nula o vacía
+                var imagen = string.IsNullOrEmpty(producto.UrlImagen)
+                ? Url.Content("~/Produimage/sin-imagen.png")   // imagen por defecto
+                : (producto.UrlImagen.StartsWith("/")
+                ? Url.Content(producto.UrlImagen)          // ya viene con ruta absoluta (/Produimage/xxx.png)
+                : Url.Content("~/Produimage/" + producto.UrlImagen)); // solo nombre (xxx.png)
 
                 <div class="col-md-6 mb-3">
                     <div class="card h-100 shadow-sm">
                         <div class="row g-0">
                             <div class="col-4">
-                                <img src="@urlImagen"
+                                <img src="@imagen"
                                      alt="@producto.Nombre"
                                      class="img-fluid rounded-start"
                                      style="width:100%;height:120px;object-fit:cover;" />
@@ -59,7 +60,9 @@
     }
     else
     {
-        <div class="alert alert-info text-center">Esta compra no tiene productos asociados 🛒</div>
+        <div class="alert alert-info text-center">
+            Esta compra no tiene productos asociados 🛒
+        </div>
     }
 
     <!-- Botones de acción -->

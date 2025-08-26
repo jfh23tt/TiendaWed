@@ -31,10 +31,12 @@
         </div>
 
         <!-- Búsqueda -->
+        <!-- Búsqueda -->
         <div class="input-group mb-3">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" placeholder="Buscar producto...">
+            <input type="text" id="buscarProducto" class="form-control" placeholder="Buscar producto...">
         </div>
+
 
         <table class="table table-striped mt-3">
             <thead>
@@ -60,7 +62,7 @@
                         <td>@item.Descripcion</td>
                         <td>@item.Unidades</td>
                         <td>@item.Precio</td>
-                        <td>@item.estado</td>
+                        <td>@item.Estado</td>
                         <td>@item.FechaCreacion.ToString("yyyy-MM-dd")</td>
                         <td>
                             <button class="btn btn-primary btn-sm me-1 btn-editar"
@@ -73,7 +75,7 @@
                                     data-descripcion="@item.Descripcion"
                                     data-precio="@item.Precio"
                                     data-unidades="@item.Unidades"
-                                    data-estado="@item.estado"
+                                    data-estado="@item.Estado"
                                     data-fechaingreso="@item.FechaCreacion.ToString("yyyy-MM-ddTHH:mm")">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
@@ -123,8 +125,9 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Estado</label>
-                            <select name="estado" class="form-select" asp-items="Html.GetEnumSelectList<Estado>()"></select>
+                            <select name="Estado" class="form-select" asp-items="Html.GetEnumSelectList<TiendaWed.Models.Estado>()"></select>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Imagen</label>
                             <input type="file" name="ImageFile" class="form-control" required>
@@ -240,50 +243,60 @@
                     document.getElementById("EditDescripcion").value = btn.dataset.descripcion;
                     document.getElementById("EditPrecio").value = btn.dataset.precio;
                     document.getElementById("EditUnidades").value = btn.dataset.unidades;
-                    document.getElementById("Editestado").value = btn.dataset.estado;
+                    document.getElementById("EditEstado").value = btn.dataset.estado;
                     document.getElementById("EditFechaIngreso").value = btn.dataset.fechaingreso;
                 });
             });
 
             // Editar producto
-                    formEditar.addEventListener("submit", async (e) => {
-            e.preventDefault();
+            formEditar.addEventListener("submit", async (e) => {
+                e.preventDefault();
 
-            const formData = new FormData();
-            formData.append("Id", document.getElementById("EditId").value);
-            formData.append("Codigo", document.getElementById("EditCodigo").value);
-            formData.append("Nombre", document.getElementById("EditNombre").value);
-            formData.append("Categoria", document.getElementById("EditCategoria").value);
-            formData.append("Descripcion", document.getElementById("EditDescripcion").value);
-            formData.append("Unidades", document.getElementById("EditUnidades").value);
-            formData.append("Precio", document.getElementById("EditPrecio").value);
-            formData.append("Estado", document.getElementById("EditEstado").value);
-            formData.append("FechaCreacion", document.getElementById("EditFechaIngreso").value);
+                const formData = new FormData();
+                formData.append("Id", document.getElementById("EditId").value);
+                formData.append("Codigo", document.getElementById("EditCodigo").value);
+                formData.append("Nombre", document.getElementById("EditNombre").value);
+                formData.append("Categoria", document.getElementById("EditCategoria").value);
+                formData.append("Descripcion", document.getElementById("EditDescripcion").value);
+                formData.append("Unidades", document.getElementById("EditUnidades").value);
+                formData.append("Precio", document.getElementById("EditPrecio").value);
+                formData.append("Estado", document.getElementById("EditEstado").value);
+                formData.append("FechaCreacion", document.getElementById("EditFechaIngreso").value);
 
-            const fileInput = document.getElementById("EditImageFile");
-            if (fileInput.files.length > 0) {
-                formData.append("ImageFile", fileInput.files[0]);
-            }
-
-            try {
-                const response = await fetch("/Producto/Editar", {
-                    method: "POST",
-                    body: formData // 👈 ya no JSON
-                });
-
-                if (response.ok) {
-                    alert("✅ Producto actualizado correctamente.");
-                    bootstrap.Modal.getInstance(document.getElementById("modalEditar")).hide();
-                    location.reload();
-                } else {
-                    alert("❌ Error al actualizar el producto.");
+                const fileInput = document.getElementById("EditImageFile");
+                if (fileInput.files.length > 0) {
+                    formData.append("ImageFile", fileInput.files[0]);
                 }
-            } catch (err) {
-                console.error(err);
-                alert("Error inesperado.");
-            }
-        });
 
+                try {
+                    const response = await fetch("/Producto/Editar", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        alert("✅ Producto actualizado correctamente.");
+                        bootstrap.Modal.getInstance(document.getElementById("modalEditar")).hide();
+                        location.reload();
+                    } else {
+                        alert("❌ Error al actualizar el producto.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Error inesperado.");
+                }
+            });
+
+            // 🔍 Buscar productos en la tabla (esto va FUERA del submit)
+            document.getElementById("buscarProducto").addEventListener("keyup", function () {
+                const filtro = this.value.toLowerCase();
+                const filas = document.querySelectorAll("table tbody tr");
+
+                filas.forEach(fila => {
+                    const textoFila = fila.textContent.toLowerCase();
+                    fila.style.display = textoFila.includes(filtro) ? "" : "none";
+                });
+            });
         });
     </script>
 

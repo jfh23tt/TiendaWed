@@ -18,14 +18,14 @@
 
     <h2>Información del Usuario</h2>
     <div class="row">
-        <div class="col-md-6 form-group">
+        @* <div class="col-md-6 form-group">
             <label class="form-label">Tipo de documento:</label>
             <input type="text" class="readonly-input" value="@Model.TipoC.ToString()" readonly />
         </div>
         <div class="col-md-6 form-group">
             <label class="form-label">Identificación:</label>
             <input type="text" class="readonly-input" value="@Model.Identificacion" readonly />
-        </div>
+        </div> *@
         <div class="col-md-6 form-group">
             <label class="form-label">Nombre:</label>
             <input type="text" class="readonly-input" value="@Model.Nombre" readonly />
@@ -42,13 +42,13 @@
             <label class="form-label">Correo:</label>
             <input type="email" class="readonly-input" value="@Model.Correo" readonly />
         </div>
-        <div class="col-md-6 form-group">
+        @* <div class="col-md-6 form-group">
             <label class="form-label">Fecha de Nacimiento:</label>
             <input type="text" class="readonly-input" value="@Model.Fechadenacimiento.ToString("yyyy-MM-dd")" readonly />
         </div>
         <div class="col-md-6 form-group">
             <label class="form-label">Sexo:</label>
             <input type="text" class="readonly-input" value="@Model.Tiposexo.ToString()" readonly />
-        </div>
+        </div> *@
     </div>
 </div>

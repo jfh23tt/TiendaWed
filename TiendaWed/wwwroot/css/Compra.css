@@ -29,8 +29,8 @@ h2 {
 }
 
     .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0px 6px 20px rgba(0,0,0,0.1);
+        transform: translateY(-8px);
+        box-shadow: 7px 6px 20px #333;
     }
 
 .card-body {
@@ -47,16 +47,16 @@ h2 {
     .card-body h6 {
         font-size: 1rem;
         font-weight: 600;
-        margin-bottom: 3px;
+        margin-bottom: 4px;
     }
 
     .card-body small {
-        font-size: 0.9rem;
+        font-size: 0.99rem;
     }
 
     /* ====== INFO DE COMPRA ====== */
     .card-body .fw-bold.text-primary {
-        font-size: 0.95rem;
+        font-size: 0.99rem;
     }
 
     .card-body p {

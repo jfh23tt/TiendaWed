@@ -2,10 +2,14 @@
 {
     public enum Rol
     {
-        none = 0,
-        Cliente = 1,
-        Administrador = 2,
 
-    }
-
+            None = 0,   // 👈 valor por defecto (opcional)
+            Cliente = 1,
+            Admin = 2
+        }
 }
+
+
+
+
+

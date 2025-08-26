@@ -31,7 +31,7 @@ public class ProductoModel
     public int Unidades { get; set; }
 
     [Required(ErrorMessage = "El Campo {0} Es Requerido")]
-    public Estado estado { get; set; }
+    public Estado Estado { get; set; }
     [DataType(DataType.Upload)]
     public string Urlimagen { get; set; }
 

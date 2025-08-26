@@ -10,7 +10,12 @@ namespace TiendaWed.Repositorio
         Task<bool> RegistroUsuario(Registrarse usuario);
         Task<Registrarse> ValidarUsuario(string correo, string contrasena);
         Task<Registrarse> ObtenerPorId(int id);
+        Task<IEnumerable<Registrarse>> ObtenerTodos(); // 👈 nuevo
+        Task<bool> ActualizarUsuario(Registrarse usuario); // 👈 nuevo
+        Task<bool> EliminarUsuario(int id); // 👈 nuevo
         Task<bool> ActualizarContrasena(int id, string nuevaContrasena);
+        // 🔹 Nuevo método para descontar stock de forma segura
+        
 
     }
     public class RepositorioUsuario : IRepositorioUsuario
@@ -66,7 +71,8 @@ namespace TiendaWed.Repositorio
             }
         }
 
-
+        // 🔹 Nuevo método: descontar stock de forma segura
+      
         public async Task<bool> RegistroUsuario(Registrarse usuario)
         {
             try
@@ -82,17 +88,25 @@ namespace TiendaWed.Repositorio
                     throw new Exception("El correo ya está registrado.");
                 }
 
-                //// Encriptar contraseña antes de guardar
-                //Encriptar enc = new Encriptar();
-                //usuario.Contraseña = enc.Encrypt(usuario.Contraseña);
+                // 🔒 Forzar siempre rol Cliente en registros públicos
+                usuario.Rol = Rol.Cliente;
 
+                // Insert (columna Rol en SQL debe ser INT)
                 const string sql = @"
-            INSERT INTO Usuario
-            (TipoC, Identificacion, Nombre, Apellido, Telefono, Rol, Tiposexo, Fechadenacimiento, Correo, Contraseña)
-            VALUES (@TipoC, @Identificacion, @Nombre, @Apellido, @Telefono, @Rol, @Tiposexo, @Fechadenacimiento, @Correo, @Contraseña);
+            INSERT INTO Usuario (Nombre, Apellido, Telefono, Rol, Correo, Contraseña)
+            VALUES (@Nombre, @Apellido, @Telefono, @Rol, @Correo, @Contraseña);
         ";
 
-                var rows = await db.ExecuteAsync(sql, usuario);
+                var rows = await db.ExecuteAsync(sql, new
+                {
+                    usuario.Nombre,
+                    usuario.Apellido,
+                    usuario.Telefono,
+                    Rol = (int)usuario.Rol, // 👈 se guarda como INT
+                    usuario.Correo,
+                    usuario.Contraseña
+                });
+
                 return rows > 0;
             }
             catch (Exception ex)
@@ -101,6 +115,8 @@ namespace TiendaWed.Repositorio
                 return false;
             }
         }
+
+
         // 👇 Nuevo método para actualizar contraseña
         public async Task<bool> ActualizarContrasena(int id, string nuevaContrasena)
         {
@@ -132,6 +148,64 @@ namespace TiendaWed.Repositorio
                 return false;
             }
         }
+        public async Task<IEnumerable<Registrarse>> ObtenerTodos()
+        {
+            using IDbConnection db = new SqlConnection(cnx);
+            const string sql = "SELECT * FROM Usuario ORDER BY FechaCreacion DESC;";
+            return await db.QueryAsync<Registrarse>(sql);
+        }
+
+        public async Task<bool> ActualizarUsuario(Registrarse usuario)
+        {
+            try
+            {
+                using IDbConnection db = new SqlConnection(cnx);
+
+                const string sql = @"
+            UPDATE Usuario
+            SET Nombre = @Nombre,
+                Apellido = @Apellido,
+                Telefono = @Telefono,
+                Rol = @Rol,
+                Correo = @Correo
+            WHERE Id = @Id;
+        ";
+
+                var rows = await db.ExecuteAsync(sql, new
+                {
+                    usuario.Id,
+                    usuario.Nombre,
+                    usuario.Apellido,
+                    usuario.Telefono,
+                    Rol = (int)usuario.Rol,
+                    usuario.Correo
+                });
+
+                return rows > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error en ActualizarUsuario: " + ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> EliminarUsuario(int id)
+        {
+            try
+            {
+                using IDbConnection db = new SqlConnection(cnx);
+                const string sql = "DELETE FROM Usuario WHERE Id = @Id;";
+                var rows = await db.ExecuteAsync(sql, new { Id = id });
+                return rows > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error en EliminarUsuario: " + ex.Message);
+                return false;
+            }
+        }
+
     }
 
 }

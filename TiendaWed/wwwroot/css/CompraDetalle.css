@@ -1,0 +1,106 @@
+﻿/* ================================
+   Estilos generales
+================================ */
+body {
+    background-color: #f8f9fb;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #444;
+}
+
+/* ================================
+   Títulos
+================================ */
+h2 {
+    font-size: 1.8rem;
+    border-left: 6px solid #0d6efd;
+    padding-left: 12px;
+    margin-bottom: 1.5rem;
+}
+
+/* ================================
+   Tarjeta de compra
+================================ */
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .card:hover {
+        transform: translateY(-9px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+
+.card-body p {
+    margin-bottom: 0.4rem;
+}
+
+/* ================================
+   Producto en lista
+================================ */
+.card .row {
+    align-items: center;
+}
+
+.card img {
+    border-radius: 12px 0 0 12px;
+}
+
+.card-title {
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+    color: #212529;
+}
+
+/* Subtítulos */
+.card-text {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+    /* Subtotal en negrita */
+    .card-text.fw-bold {
+        color: #0d6efd;
+        font-size: 1rem;
+    }
+
+/* ================================
+   Botones
+================================ */
+.btn {
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+    .btn:hover {
+        transform: scale(1.03);
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+.btn-primary {
+    background-color: #0d6efd;
+    border: none;
+}
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+    }
+
+/* ================================
+   Alertas
+================================ */
+.alert {
+    border-radius: 12px;
+    font-size: 1rem;
+    padding: 1rem;
+}

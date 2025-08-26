@@ -1,7 +1,9 @@
 ﻿using System.Data;
 using Dapper;
 using System.Data.SqlClient;
-using TiendaWed.Models; 
+using TiendaWed.Models;
+using System.Transactions;
+
 
 namespace TiendaWed.Repositorio
 {
@@ -13,8 +15,8 @@ namespace TiendaWed.Repositorio
         /*carritoModel selectcarro(int id);*/              // Seleccionar producto para carrito
         Task<ProductoModel> ObtenerProductoPorId(int id); // Obtener producto por id
         CarritoModel selectcarro(int Codigo);
+        Task<bool> DescontarStock(int productoId, int cantidad);
 
-       
         Task<bool> Actualizar(ProductoModel producto);
         }
     public class RepositorioProducto : IRepositorioProducto
@@ -49,7 +51,24 @@ namespace TiendaWed.Repositorio
                 return producto;
             }
         }
-       
+        public async Task<bool> DescontarStock(int productoId, int cantidad)
+        {
+            using (var connection = new SqlConnection(cnx))
+            {
+                string sql = @"
+            UPDATE Producto 
+            SET Unidades = Unidades - @Cantidad
+            WHERE Id = @IdProducto AND Unidades >= @Cantidad";
+
+                var filasAfectadas = await connection.ExecuteAsync(
+                    sql,
+                    new { IdProducto = productoId, Cantidad = cantidad }
+                );
+
+                return filasAfectadas > 0; // ✅ True si actualizó, False si no había stock suficiente
+            }
+        }
+
 
         /// <summary>
         /// Insertar un producto nuevo
@@ -62,7 +81,7 @@ namespace TiendaWed.Repositorio
                 {
                     var result = await connection.ExecuteAsync(
                          @"INSERT INTO Producto(Codigo, Nombre, Categoria, Descripcion, Precio, Unidades, Estado, urlimagen) 
-                       VALUES (@Codigo, @Nombre, @Categoria, @Descripcion, @Precio, @Unidades, @estado, @urlimagen)", producto
+                       VALUES (@Codigo, @Nombre, @Categoria, @Descripcion, @Precio, @Unidades, @Estado, @urlimagen)", producto
                        );
 
 

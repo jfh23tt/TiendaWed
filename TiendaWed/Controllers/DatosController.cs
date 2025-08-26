@@ -32,7 +32,10 @@ namespace TiendaWed.Controllers
 
             try
             {
-                // 🔒 Asignar fecha de creación automáticamente
+                // 🔒 Forzar rol siempre como "Cliente"
+                usuario.Rol = Rol.Cliente;
+
+                // Asignar fecha de creación automáticamente
                 usuario.FechaCreacion = DateTime.Now;
 
                 // Encriptar la contraseña antes de guardar
@@ -44,7 +47,7 @@ namespace TiendaWed.Controllers
                 if (creado)
                 {
                     TempData["MensajeExito"] = "Cuenta creada correctamente. Ahora puedes iniciar sesión.";
-                    return RedirectToAction("Logins", "Logins");
+                    return RedirectToAction("Logins", "Logins"); // ✅ corrige según tus rutas
                 }
                 else
                 {
@@ -58,6 +61,9 @@ namespace TiendaWed.Controllers
                 return RedirectToAction("Registrarse");
             }
         }
+
+      
+    
 
 
         // GET: DatosController/Details/5

@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using TiendaWed.Models;
 using TiendaWed.Repositorio;
+
 
 public class CarritoController : Controller
 {
@@ -47,7 +49,7 @@ public class CarritoController : Controller
             return RedirectToAction("Compras");
         }
 
-        return View("~/Views/Carrito/DetalleCompra.cshtml", pedido); // 👈 Renderiza DetalleCompra.cshtml
+        return View("~/Views/Compra/DetalleCompra.cshtml", pedido); // 👈 Renderiza DetalleCompra.cshtml
     }
 
 
@@ -145,7 +147,7 @@ public class CarritoController : Controller
         if (usuarioId == 0)
         {
             TempData["MensajeError"] = "Debe iniciar sesión para realizar una compra.";
-            return RedirectToAction("Login", "Logins");
+            return RedirectToAction("Logins", "Logins");
         }
 
         var clienteNombre = HttpContext.Session.GetString("NombreUsuario") ?? "Cliente";
@@ -167,86 +169,24 @@ public class CarritoController : Controller
 
         try
         {
-            // Guardar el pedido
-            var pedidoId = await repositorioPedido.CrearPedido(pedido);
+            // 🔹 Guardar pedido (el repositorio ya descuenta stock dentro de la transacción)
+            int pedidoId = await repositorioPedido.CrearPedido(pedido);
 
-            // Descontar stock de cada producto
-            foreach (var item in itemsCarrito)
-            {
-                var producto = await repositorioProducto.ObtenerProductoPorId(item.Producto.Id);
-                if (producto != null)
-                {
-                    producto.Unidades -= item.Cantidad;
-                    await repositorioProducto.Actualizar(producto);
-                }
-            }
-
-            // Vaciar carrito
+            // ✅ Limpiar carrito después de éxito
             carritoServicio.LimpiarCarro();
 
-            // Mensaje de éxito
             TempData["MensajeExito"] = $"Compra realizada con éxito. Número de pedido: {pedidoId}";
-
-            // Redirigir a confirmación de compra
             return RedirectToAction("Index", "Home", new { id = pedidoId });
         }
         catch (Exception ex)
         {
-            
-
-            TempData["MensajeError"] = "Hubo un error al procesar la compra. Intente nuevamente.";
+            TempData["MensajeError"] = ex.Message;
             return RedirectToAction("Carrito");
         }
     }
 
 
-    // Comprar directamente un solo producto
-    [HttpPost]
-    public async Task<IActionResult> ComprarAhora(int productoId, int cantidad = 1)
-    {
-        var usuarioId = HttpContext.Session.GetInt32("UsuarioId") ?? 0;
-        if (usuarioId == 0)
-        {
-            TempData["MensajeError"] = "Debe iniciar sesión para comprar.";
-            return RedirectToAction("Login", "Logins");
-        }
 
-        var producto = await repositorioProducto.ObtenerProductoPorId(productoId);
-        if (producto == null)
-        {
-            TempData["MensajeError"] = "El producto no existe.";
-            return RedirectToAction("Index", "Home");
-        }
-
-        var pedido = new PedidoModel
-        {
-            UsuarioId = usuarioId,
-            ClienteNombre = TempData["NombreUsuario"]?.ToString() ?? "Cliente",
-            Fecha = DateTime.Now,
-            Total = producto.Precio * cantidad,
-            Detalles = new List<PedidoDetalle>
-        {
-            new PedidoDetalle
-            {
-                ProductoId = producto.Id,
-                Nombre = producto.Nombre,
-                Cantidad = cantidad,
-                PrecioUnitario = producto.Precio
-            }
-        }
-        };
-
-        try
-        {
-            var pedidoId = await repositorioPedido.CrearPedido(pedido);
-            TempData["MensajeExito"] = $"Compra realizada con éxito. Pedido N° {pedidoId}";
-            return RedirectToAction("Index", "Home");
-        }
-        catch (Exception ex)
-        {
-            TempData["MensajeError"] = $"Ocurrió un error al procesar la compra: {ex.Message}";
-            return RedirectToAction("Index", "Home");
-        }
-    }
+  
 
 }
