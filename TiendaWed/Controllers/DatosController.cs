@@ -21,7 +21,7 @@ namespace TiendaWed.Controllers
             return View("~/Views/Registrarse/Registrarse.cshtml");
         }
 
-
+        [HttpPost]
         public async Task<IActionResult> Registrase(Registrarse usuario)
         {
             if (!ModelState.IsValid)
@@ -32,6 +32,14 @@ namespace TiendaWed.Controllers
 
             try
             {
+                // 🔎 Validar si el correo ya existe
+                //bool correoExiste = await repositorioUsuario.ExisteCorreo(usuario.Correo);
+                //if (correoExiste)
+                //{
+                //    TempData["ErrorRegistro"] = "El correo ya está registrado. Intenta con otro.";
+                //    return RedirectToAction("Registrarse");
+                //}
+
                 // 🔒 Forzar rol siempre como "Cliente"
                 usuario.Rol = Rol.Cliente;
 
@@ -42,16 +50,17 @@ namespace TiendaWed.Controllers
                 Encriptar encriptar = new Encriptar();
                 usuario.Contraseña = encriptar.Encrypt(usuario.Contraseña);
 
+                // Guardar en la base de datos
                 bool creado = await repositorioUsuario.RegistroUsuario(usuario);
 
                 if (creado)
                 {
                     TempData["MensajeExito"] = "Cuenta creada correctamente. Ahora puedes iniciar sesión.";
-                    return RedirectToAction("Logins", "Logins"); // ✅ corrige según tus rutas
+                    return RedirectToAction("Logins", "Logins");
                 }
                 else
                 {
-                    TempData["ErrorRegistro"] = "No se pudo registrar el usuario (puede que el correo ya exista).";
+                    TempData["ErrorRegistro"] = "No se pudo registrar el usuario.";
                     return RedirectToAction("Registrarse");
                 }
             }
@@ -62,8 +71,9 @@ namespace TiendaWed.Controllers
             }
         }
 
-      
-    
+
+
+
 
 
         // GET: DatosController/Details/5

@@ -8,20 +8,21 @@
     <h2 class="text-center mb-4">Panel de Administración - Usuarios</h2>
 
     <!-- Mensajes -->
-    @if (TempData["Success"] != null)
+    @if (TempData["MensajeExito"] != null)
     {
-        <div class="alert alert-success">@TempData["Success"]</div>
+        <div class="alert alert-success text-center">@TempData["MensajeExito"]</div>
     }
-    @if (TempData["Error"] != null)
+    @if (TempData["ErrorRegistro"] != null)
     {
-        <div class="alert alert-danger">@TempData["Error"]</div>
+        <div class="alert alert-danger text-center">@TempData["ErrorRegistro"]</div>
     }
 
     <!-- Barra de acciones -->
     <div class="d-flex justify-content-between mb-3">
-        <a asp-controller="Admin" asp-action="CrearUsuario" class="btn btn-success">
+        <!-- Botón para abrir modal -->
+        <button class="btn btn-success" onclick="abrirModalAgregar()">
             <i class="bi bi-person-plus"></i> Agregar Usuario
-        </a>
+        </button>
         <input type="text" id="buscar" class="form-control w-25" placeholder="Buscar...">
     </div>
 
@@ -73,6 +74,53 @@
                 }
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Modal Agregar -->
+<div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formAgregar" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Agregar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Nombre</label>
+                        <input type="text" name="Nombre" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Apellido</label>
+                        <input type="text" name="Apellido" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Correo</label>
+                        <input type="email" name="Correo" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Teléfono</label>
+                        <input type="text" name="Telefono" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Contraseña</label>
+                        <input type="password" name="Contraseña" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label>Rol</label>
+                        <select name="Rol" class="form-select">
+                            <option value="Cliente" selected>Cliente</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -173,5 +221,31 @@
             var texto = fila.textContent.toLowerCase();
             fila.style.display = texto.includes(filtro) ? "" : "none";
         });
+    });
+
+    // Abrir modal agregar
+    function abrirModalAgregar() {
+        new bootstrap.Modal(document.getElementById("modalAgregar")).show();
+    }
+
+    // Acción del formulario agregar
+    document.getElementById("formAgregar").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const form = this;
+        const actionUrl = "/Admin/Registrase"; // Acción en tu controlador
+
+        fetch(actionUrl, {
+            method: "POST",
+            body: new FormData(form)
+        })
+        .then(r => {
+            if (r.ok) {
+                location.reload();
+            } else {
+                alert("Error al agregar el usuario.");
+            }
+        })
+        .catch(() => alert("Ocurrió un error al enviar la solicitud."));
     });
 </script>

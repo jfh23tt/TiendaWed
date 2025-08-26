@@ -82,6 +82,55 @@ namespace TiendaWed.Controllers
 
             return RedirectToAction(nameof(Usuario));
         }
+        [HttpPost]
+        public async Task<IActionResult> Registrase(Registrarse usuario)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorRegistro"] = "Datos inválidos, revisa el formulario.";
+                return RedirectToAction("Usuario");
+            }
+
+            try
+            {
+                // 🔎 Validar si el correo ya existe
+                //bool correoExiste = await repositorioUsuario.ObtenerPorId(usuario.Correo);
+                //if (correoExiste)
+                //{
+                //    TempData["ErrorRegistro"] = "El correo ya está registrado. Intenta con otro.";
+                //    return RedirectToAction("Registrarse");
+                //}
+
+                // 🔒 Forzar rol siempre como "Cliente"
+                usuario.Rol = Rol.Cliente;
+
+                // Asignar fecha de creación automáticamente
+                usuario.FechaCreacion = DateTime.Now;
+
+                // Encriptar la contraseña antes de guardar
+                Encriptar encriptar = new Encriptar();
+                usuario.Contraseña = encriptar.Encrypt(usuario.Contraseña);
+
+                // Guardar en la base de datos
+                bool creado = await repositorioUsuario.RegistroUsuario(usuario);
+
+                if (creado)
+                {
+                    TempData["MensajeExito"] = "Cuenta creada correctamente. Ahora puedes iniciar sesión.";
+                    return RedirectToAction("Usuario", "Admin");
+                }
+                else
+                {
+                    TempData["ErrorRegistro"] = "No se pudo registrar el usuario.";
+                    return RedirectToAction("Usuario");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorRegistro"] = $"Ocurrió un error: {ex.Message}";
+                return RedirectToAction("Usuario");
+            }
+        }
 
 
         // 📌 Eliminar usuario (desde modal)
