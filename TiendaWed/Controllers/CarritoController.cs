@@ -90,16 +90,20 @@ public class CarritoController : Controller
     }
 
     // Agregar un producto al carrito
+    [HttpPost]
     public IActionResult Agregar(int codigo, int cantidad)
     {
         var detalle = repositorioProducto.selectcarro(codigo);
         if (detalle != null)
         {
             carritoServicio.agregarItemCarro(detalle, cantidad);
-        }
+            var totalItems = carritoServicio.listarItemsCarro().Sum(x => x.Cantidad);
 
-        var carroitem = carritoServicio.listarItemsCarro();
-        return View("~/Views/Home/Carrito.cshtml", carroitem);
+            HttpContext.Session.SetInt32("CarritoCantidad", totalItems);
+
+            return Json(new { success = true, mensaje = "Producto agregado al carrito", totalItems });
+        }
+        return Json(new { success = false, mensaje = "El producto no existe" });
     }
 
     // Actualizar cantidad de un producto
@@ -169,14 +173,55 @@ public class CarritoController : Controller
 
         try
         {
-            // 🔹 Guardar pedido (el repositorio ya descuenta stock dentro de la transacción)
+            // 🔹 Guardar pedido
             int pedidoId = await repositorioPedido.CrearPedido(pedido);
 
             // ✅ Limpiar carrito después de éxito
             carritoServicio.LimpiarCarro();
 
-            TempData["MensajeExito"] = $"Compra realizada con éxito. Número de pedido: {pedidoId}";
-            return RedirectToAction("Index", "Home", new { id = pedidoId });
+            // ✅ Generar factura PDF
+            using (var ms = new MemoryStream())
+            {
+                var writer = new iText.Kernel.Pdf.PdfWriter(ms);
+                var pdf = new iText.Kernel.Pdf.PdfDocument(writer);
+                var doc = new iText.Layout.Document(pdf);
+
+                // Encabezado
+                doc.Add(new iText.Layout.Element.Paragraph("Factura de Compra")
+                    .SetFontSize(18).SetBold());
+                doc.Add(new iText.Layout.Element.Paragraph($"Pedido N°: {pedidoId}"));
+                doc.Add(new iText.Layout.Element.Paragraph($"Cliente: {clienteNombre}"));
+                doc.Add(new iText.Layout.Element.Paragraph($"Fecha: {DateTime.Now:dd/MM/yyyy HH:mm}"));
+
+                doc.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                // Tabla de productos
+                var table = new iText.Layout.Element.Table(4, true);
+                table.AddHeaderCell("Producto");
+                table.AddHeaderCell("Cantidad");
+                table.AddHeaderCell("Precio Unitario");
+                table.AddHeaderCell("Subtotal");
+
+                foreach (var item in pedido.Detalles)
+                {
+                    table.AddCell(item.Nombre);
+                    table.AddCell(item.Cantidad.ToString());
+                    table.AddCell("$" + item.PrecioUnitario.ToString("N2"));
+                    table.AddCell("$" + (item.Cantidad * item.PrecioUnitario).ToString("N2"));
+                }
+
+                doc.Add(table);
+
+                doc.Add(new iText.Layout.Element.Paragraph($"\nTOTAL: ${pedido.Total:N2}")
+                    .SetBold().SetFontSize(14));
+
+                doc.Close();
+
+                byte[] pdfBytes = ms.ToArray();
+
+                // 📄 Descargar PDF directamente
+                return File(pdfBytes, "application/pdf", $"Factura_{pedidoId}.pdf");
+            }
         }
         catch (Exception ex)
         {
@@ -187,6 +232,7 @@ public class CarritoController : Controller
 
 
 
-  
+
+
 
 }
