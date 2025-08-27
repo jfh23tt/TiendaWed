@@ -10,7 +10,7 @@ namespace TiendaWed.Repositorio
         Task<int> CrearPedido(PedidoModel pedido); // Crear nuevo pedido
         Task<PedidoModel?> ObtenerPedidoConDetalles(int pedidoId);
         Task<IEnumerable<PedidoModel>> ObtenerPedidosPorUsuario(int usuarioId);
-        Task<PedidoModel?> ObtenerPedidoPorId(int pedidoId);
+      
 
     }
 
@@ -86,8 +86,8 @@ namespace TiendaWed.Repositorio
                     {
                         // 1️⃣ Insertar en tabla Pedidos
                         string sqlPedido = @"INSERT INTO Pedidos (UsuarioId, Fecha, Total)
-                                     VALUES (@UsuarioId, GETDATE(), @Total);
-                                     SELECT CAST(SCOPE_IDENTITY() as int);";
+                              VALUES (@UsuarioId, GETDATE(), @Total);
+                              SELECT CAST(SCOPE_IDENTITY() as int);";
 
                         int pedidoId = await db.QuerySingleAsync<int>(sqlPedido, new
                         {
@@ -95,30 +95,30 @@ namespace TiendaWed.Repositorio
                             Total = pedido.Total
                         }, transaction);
 
-                        // 2️⃣ Insertar detalle de pedido (con Nombre y Subtotal)
+                        // 2️⃣ Insertar detalle de pedido
                         string sqlDetalle = @"INSERT INTO PedidoDetalles 
-                                      (PedidoId, ProductoId, Nombre, Cantidad, PrecioUnitario, Subtotal)
-                                      VALUES (@PedidoId, @ProductoId, @Nombre, @Cantidad, @PrecioUnitario, @Subtotal);";
+                               (PedidoId, ProductoId, Nombre, Cantidad, PrecioUnitario, Subtotal)
+                               VALUES (@PedidoId, @ProductoId, @Nombre, @Cantidad, @PrecioUnitario, @Subtotal);";
 
-                        // 3️⃣ Actualizar stock validando que no quede negativo
+                        // 3️⃣ Actualizar stock
                         string sqlUpdateStock = @"UPDATE Producto 
-                                          SET Unidades = Unidades - @Cantidad 
-                                          WHERE Id = @Id AND Unidades >= @Cantidad;";
+                                   SET Unidades = Unidades - @Cantidad 
+                                   WHERE Id = @Id AND Unidades >= @Cantidad;";
 
                         foreach (var item in pedido.Detalles)
                         {
-                            // Insertar detalle con Nombre y Subtotal
+                            // Insertar detalle de pedido
                             await db.ExecuteAsync(sqlDetalle, new
                             {
                                 PedidoId = pedidoId,
                                 ProductoId = item.ProductoId,
-                                Nombre = item.Nombre, // 👈 Aquí agregamos el nombre del producto
+                                Nombre = item.Nombre,
                                 Cantidad = item.Cantidad,
                                 PrecioUnitario = item.PrecioUnitario,
                                 Subtotal = item.Cantidad * item.PrecioUnitario
                             }, transaction);
 
-                            // Descontar stock y validar resultado
+                            // Validar y descontar stock
                             var filasAfectadas = await db.ExecuteAsync(sqlUpdateStock, new
                             {
                                 Cantidad = item.Cantidad,
@@ -131,8 +131,38 @@ namespace TiendaWed.Repositorio
                             }
                         }
 
+                        // 4️⃣ Crear Factura ligada al pedido
+                        string numeroFactura = $"FAC-{DateTime.Now:yyyyMMddHHmmss}";
+
+                        string sqlFactura = @"INSERT INTO Factura (NumeroFactura, Fecha, Total)
+                                   VALUES (@NumeroFactura, GETDATE(), @Total);
+                                   SELECT CAST(SCOPE_IDENTITY() as int);";
+
+                        int facturaId = await db.QuerySingleAsync<int>(sqlFactura, new
+                        {
+                            NumeroFactura = numeroFactura,
+                            Total = pedido.Total
+                        }, transaction);
+
+                        // 5️⃣ Insertar FacturaDetalles copiando los detalles del pedido
+                        string sqlFacturaDetalle = @"INSERT INTO FacturaDetalles 
+                                    (FacturaId, Nombre, Cantidad, PrecioUnitario, Subtotal)
+                                    VALUES (@FacturaId, @Nombre, @Cantidad, @PrecioUnitario, @Subtotal);";
+
+                        foreach (var item in pedido.Detalles)
+                        {
+                            await db.ExecuteAsync(sqlFacturaDetalle, new
+                            {
+                                FacturaId = facturaId,
+                                Nombre = item.Nombre,
+                                Cantidad = item.Cantidad,
+                                PrecioUnitario = item.PrecioUnitario,
+                                Subtotal = item.Cantidad * item.PrecioUnitario
+                            }, transaction);
+                        }
+
                         transaction.Commit();
-                        return pedidoId;
+                        return pedidoId; // 👈 Aquí devuelves el ID del pedido (puedes devolver también facturaId si lo necesitas)
                     }
                     catch
                     {
@@ -142,6 +172,7 @@ namespace TiendaWed.Repositorio
                 }
             }
         }
+
 
 
 

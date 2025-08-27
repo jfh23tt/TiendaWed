@@ -199,7 +199,7 @@ public class CarritoController : Controller
 
     public async Task<IActionResult> GenerarFactura(int id)
     {
-        var pedido = await repositorioPedido.ObtenerPedidoPorId(id);
+        var pedido = await repositorioPedido.ObtenerPedidoConDetalles(id); // 👈 traer pedido con detalles
 
         if (pedido == null)
         {
@@ -223,7 +223,7 @@ public class CarritoController : Controller
             doc.Add(new iText.Layout.Element.Paragraph("\n"));
 
             // Tabla de productos
-            var table = new iText.Layout.Element.Table(4, true);
+            var table = new iText.Layout.Element.Table(4);
             table.AddHeaderCell("Producto");
             table.AddHeaderCell("Cantidad");
             table.AddHeaderCell("Precio Unitario");
@@ -248,7 +248,10 @@ public class CarritoController : Controller
 
             return File(pdfBytes, "application/pdf", $"Factura_{pedido.Id}.pdf");
         }
-    }
+    
+
+
+}
 
 
 

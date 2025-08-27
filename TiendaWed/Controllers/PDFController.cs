@@ -35,7 +35,7 @@ namespace TiendaWed.Controllers
         }
         public async Task<IActionResult> GenerarFactura(int id)
         {
-            var pedido = await repositorioPedido.ObtenerPedidoPorId(id);
+            var pedido = await repositorioPedido.ObtenerPedidoConDetalles(id);
 
             if (pedido == null)
             {
