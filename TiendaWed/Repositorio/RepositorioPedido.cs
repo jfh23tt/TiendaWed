@@ -10,6 +10,7 @@ namespace TiendaWed.Repositorio
         Task<int> CrearPedido(PedidoModel pedido); // Crear nuevo pedido
         Task<PedidoModel?> ObtenerPedidoConDetalles(int pedidoId);
         Task<IEnumerable<PedidoModel>> ObtenerPedidosPorUsuario(int usuarioId);
+        Task<PedidoModel?> ObtenerPedidoPorId(int pedidoId);
 
     }
 
@@ -58,6 +59,19 @@ namespace TiendaWed.Repositorio
             }
 
             return pedidos;
+        }
+        public async Task<PedidoModel?> ObtenerPedidoPorId(int pedidoId)
+        {
+            using var connection = new SqlConnection(connectionString);
+
+            const string sql = @"SELECT Id, UsuarioId, Fecha, Total
+                         FROM Pedidos
+                         WHERE Id = @PedidoId";
+
+            return await connection.QueryFirstOrDefaultAsync<PedidoModel>(
+                sql,
+                new { PedidoId = pedidoId }
+            );
         }
 
 

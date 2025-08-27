@@ -33,6 +33,59 @@ namespace TiendaWed.Controllers
         {
             return View();
         }
+        public async Task<IActionResult> GenerarFactura(int id)
+        {
+            var pedido = await repositorioPedido.ObtenerPedidoPorId(id);
+
+            if (pedido == null)
+            {
+                TempData["MensajeError"] = "No se encontró el pedido.";
+                return RedirectToAction("Compras");
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                var writer = new iText.Kernel.Pdf.PdfWriter(ms);
+                var pdf = new iText.Kernel.Pdf.PdfDocument(writer);
+                var doc = new iText.Layout.Document(pdf);
+
+                // Encabezado
+                doc.Add(new iText.Layout.Element.Paragraph("Factura de Compra")
+                    .SetFontSize(18).SetBold());
+                doc.Add(new iText.Layout.Element.Paragraph($"Pedido N°: {pedido.Id}"));
+                doc.Add(new iText.Layout.Element.Paragraph($"Cliente: {pedido.ClienteNombre}"));
+                doc.Add(new iText.Layout.Element.Paragraph($"Fecha: {pedido.Fecha:dd/MM/yyyy HH:mm}"));
+
+                doc.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                // Tabla de productos
+                var table = new iText.Layout.Element.Table(4, true);
+                table.AddHeaderCell("Producto");
+                table.AddHeaderCell("Cantidad");
+                table.AddHeaderCell("Precio Unitario");
+                table.AddHeaderCell("Subtotal");
+
+                foreach (var item in pedido.Detalles)
+                {
+                    table.AddCell(item.Nombre);
+                    table.AddCell(item.Cantidad.ToString());
+                    table.AddCell("$" + item.PrecioUnitario.ToString("N2"));
+                    table.AddCell("$" + (item.Cantidad * item.PrecioUnitario).ToString("N2"));
+                }
+
+                doc.Add(table);
+
+                doc.Add(new iText.Layout.Element.Paragraph($"\nTOTAL: ${pedido.Total:N2}")
+                    .SetBold().SetFontSize(14));
+
+                doc.Close();
+
+                byte[] pdfBytes = ms.ToArray();
+
+                return File(pdfBytes, "application/pdf", $"Factura_{pedido.Id}.pdf");
+            }
+        }
+
 
         // ✅ PDF de Inventario
         //public IActionResult pdfInventario()

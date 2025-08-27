@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using iText.IO.Font.Constants;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -173,55 +179,16 @@ public class CarritoController : Controller
 
         try
         {
-            // 🔹 Guardar pedido
+            // Guardar pedido en BD
             int pedidoId = await repositorioPedido.CrearPedido(pedido);
 
-            // ✅ Limpiar carrito después de éxito
+            // Vaciar carrito
             carritoServicio.LimpiarCarro();
 
-            // ✅ Generar factura PDF
-            using (var ms = new MemoryStream())
-            {
-                var writer = new iText.Kernel.Pdf.PdfWriter(ms);
-                var pdf = new iText.Kernel.Pdf.PdfDocument(writer);
-                var doc = new iText.Layout.Document(pdf);
+            TempData["MensajeExito"] = "Compra realizada con éxito.";
 
-                // Encabezado
-                doc.Add(new iText.Layout.Element.Paragraph("Factura de Compra")
-                    .SetFontSize(18).SetBold());
-                doc.Add(new iText.Layout.Element.Paragraph($"Pedido N°: {pedidoId}"));
-                doc.Add(new iText.Layout.Element.Paragraph($"Cliente: {clienteNombre}"));
-                doc.Add(new iText.Layout.Element.Paragraph($"Fecha: {DateTime.Now:dd/MM/yyyy HH:mm}"));
-
-                doc.Add(new iText.Layout.Element.Paragraph("\n"));
-
-                // Tabla de productos
-                var table = new iText.Layout.Element.Table(4, true);
-                table.AddHeaderCell("Producto");
-                table.AddHeaderCell("Cantidad");
-                table.AddHeaderCell("Precio Unitario");
-                table.AddHeaderCell("Subtotal");
-
-                foreach (var item in pedido.Detalles)
-                {
-                    table.AddCell(item.Nombre);
-                    table.AddCell(item.Cantidad.ToString());
-                    table.AddCell("$" + item.PrecioUnitario.ToString("N2"));
-                    table.AddCell("$" + (item.Cantidad * item.PrecioUnitario).ToString("N2"));
-                }
-
-                doc.Add(table);
-
-                doc.Add(new iText.Layout.Element.Paragraph($"\nTOTAL: ${pedido.Total:N2}")
-                    .SetBold().SetFontSize(14));
-
-                doc.Close();
-
-                byte[] pdfBytes = ms.ToArray();
-
-                // 📄 Descargar PDF directamente
-                return File(pdfBytes, "application/pdf", $"Factura_{pedidoId}.pdf");
-            }
+            // 👇 Redirige al detalle de la compra en lugar de descargar PDF
+            return RedirectToAction("DetalleCompra", "Carrito", new { id = pedidoId });
         }
         catch (Exception ex)
         {
@@ -230,6 +197,58 @@ public class CarritoController : Controller
         }
     }
 
+    public async Task<IActionResult> GenerarFactura(int id)
+    {
+        var pedido = await repositorioPedido.ObtenerPedidoPorId(id);
+
+        if (pedido == null)
+        {
+            TempData["MensajeError"] = "No se encontró el pedido.";
+            return RedirectToAction("Compras");
+        }
+
+        using (var ms = new MemoryStream())
+        {
+            var writer = new iText.Kernel.Pdf.PdfWriter(ms);
+            var pdf = new iText.Kernel.Pdf.PdfDocument(writer);
+            var doc = new iText.Layout.Document(pdf);
+
+            // Encabezado
+            doc.Add(new iText.Layout.Element.Paragraph("Factura de Compra")
+                .SetFontSize(18).SetBold());
+            doc.Add(new iText.Layout.Element.Paragraph($"Pedido N°: {pedido.Id}"));
+            doc.Add(new iText.Layout.Element.Paragraph($"Cliente: {pedido.ClienteNombre}"));
+            doc.Add(new iText.Layout.Element.Paragraph($"Fecha: {pedido.Fecha:dd/MM/yyyy HH:mm}"));
+
+            doc.Add(new iText.Layout.Element.Paragraph("\n"));
+
+            // Tabla de productos
+            var table = new iText.Layout.Element.Table(4, true);
+            table.AddHeaderCell("Producto");
+            table.AddHeaderCell("Cantidad");
+            table.AddHeaderCell("Precio Unitario");
+            table.AddHeaderCell("Subtotal");
+
+            foreach (var item in pedido.Detalles)
+            {
+                table.AddCell(item.Nombre);
+                table.AddCell(item.Cantidad.ToString());
+                table.AddCell("$" + item.PrecioUnitario.ToString("N2"));
+                table.AddCell("$" + (item.Cantidad * item.PrecioUnitario).ToString("N2"));
+            }
+
+            doc.Add(table);
+
+            doc.Add(new iText.Layout.Element.Paragraph($"\nTOTAL: ${pedido.Total:N2}")
+                .SetBold().SetFontSize(14));
+
+            doc.Close();
+
+            byte[] pdfBytes = ms.ToArray();
+
+            return File(pdfBytes, "application/pdf", $"Factura_{pedido.Id}.pdf");
+        }
+    }
 
 
 

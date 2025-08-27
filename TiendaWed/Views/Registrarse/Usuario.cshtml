@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Gestión de Usuarios";
 }
-
+<link href="~/css/Usuario.css" rel="stylesheet" />
 <div class="container mt-5">
     <h2 class="text-center mb-4">Panel de Administración - Usuarios</h2>
 
@@ -19,12 +19,22 @@
 
     <!-- Barra de acciones -->
     <div class="d-flex justify-content-between mb-3">
-        <!-- Botón para abrir modal -->
-        <button class="btn btn-success" onclick="abrirModalAgregar()">
-            <i class="bi bi-person-plus"></i> Agregar Usuario
-        </button>
-        <input type="text" id="buscar" class="form-control w-25" placeholder="Buscar...">
+        <!-- Botón volver al menú -->
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Volver al Menú
+        </a>
+
+        <div class="d-flex gap-2">
+            <!-- Botón para abrir modal -->
+            <button class="btn btn-success" onclick="abrirModalAgregar()">
+                <i class="bi bi-person-plus"></i> Agregar Usuario
+            </button>
+
+            <!-- Buscador -->
+            <input type="text" id="buscar" class="form-control" placeholder="Buscar...">
+        </div>
     </div>
+
 
     <!-- Tabla -->
     <div class="table-responsive shadow-lg">

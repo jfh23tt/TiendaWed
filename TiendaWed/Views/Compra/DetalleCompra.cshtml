@@ -4,6 +4,7 @@
     ViewData["Title"] = "Detalle de la Compra";
 }
 <link href="~/css/CompraDetalle.css" rel="stylesheet" />
+
 <div class="container mt-4">
     <h2 class="text-primary fw-bold">Detalle de la Compra</h2>
 
@@ -66,8 +67,9 @@
     }
 
     <!-- Botones de acción -->
-    <div class="mt-4">
+    <div class="mt-4 d-flex gap-2">
         <a asp-action="Compras" class="btn btn-secondary">⬅ Volver a mis compras</a>
         <a asp-action="RepetirCompra" asp-route-id="@Model.Id" class="btn btn-primary">🔄 Volver a comprar</a>
+        <a asp-action="GenerarFactura" asp-route-id="@Model.Id" class="btn btn-success">📄 Generar Factura</a>
     </div>
 </div>
